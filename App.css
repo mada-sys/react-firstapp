@@ -1,0 +1,451 @@
+/* --- 1. Variabile și Resetare Globală --- */
+:root {
+    /* Schema de culori moderne */
+    --color-bg-main: #e8ecf4;        /* Fundal deschis, ușor gri-albăstrui */
+    --color-bg-card: #ffffff;        /* Alb pur pentru carduri/containere */
+    --color-text-dark: #34495e;      /* Text închis */
+    --color-symbol-x: #e74c3c;       /* Roșu-corai vibrant (Flat UI Red) */
+    --color-symbol-o: #3498db;       /* Albastru mediu-vibrant (Flat UI Blue) */
+    --color-accent-btn: #2ecc71;     /* Verde pentru butoanele de istoric */
+    --color-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --color-shadow-deep: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--color-bg-main);
+    color: var(--color-text-dark);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* --- 2. Containerul Principal (Joc și Informații) --- */
+.game {
+    display: flex;
+    flex-direction: column; /* Pe mobil */
+    gap: 40px;
+    align-items: center;
+    padding: 40px;
+    background-color: var(--color-bg-card);
+    border-radius: 20px;
+    box-shadow: var(--color-shadow-light);
+}
+
+@media (min-width: 768px) {
+    .game {
+        flex-direction: row; /* Pe desktop */
+        padding: 50px;
+    }
+}
+
+/* --- 3. Tabla de Joc (Board) --- */
+.game-board {
+    border: 5px solid var(--color-text-dark);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.status {
+    font-size: 1.8em;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-align: center;
+    color: var(--color-text-dark);
+    transition: all 0.3s ease; /* Adaugă o tranziție lină pentru schimbarea de stare */
+    min-height: 1.5em; /* Asigură că înălțimea nu sare când se schimbă font-size-ul */
+}
+
+.board-row {
+    display: flex;
+}
+
+/* --- 4. Pătrățelele (Squares) --- */
+.square {
+    background: #fdfdfd;
+    border: 1px solid #ccc;
+    font-size: 4em;
+    font-weight: 800;
+    line-height: 1;
+    height: 100px;
+    width: 100px;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+/* Stiluri pentru borduri */
+.board-row:first-child .square { border-top: none; }
+.board-row:last-child .square { border-bottom: none; }
+.square:first-child { border-left: none; }
+.square:last-child { border-right: none; }
+
+
+.square:hover {
+    background: #f1f3f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Stiluri specifice pentru X și O (Folosind data-value din JS) */
+.square[data-value] {
+    cursor: default;
+    background: var(--color-bg-card); /* Fără schimbarea culorii de fundal după click */
+}
+
+.square[data-value]:hover {
+    transform: none;
+    box-shadow: none;
+    background: var(--color-bg-card);
+}
+
+.square[data-value="X"] {
+    color: var(--color-symbol-x);
+    animation: pop-in 0.2s ease-out;
+}
+
+.square[data-value="O"] {
+    color: var(--color-symbol-o);
+    animation: pop-in 0.2s ease-out;
+}
+
+/* --- 5. Istoricul Mutărilor (Game Info) --- */
+.game-info {
+    padding: 20px;
+    background-color: var(--color-bg-main);
+    border-radius: 10px;
+    box-shadow: var(--color-shadow-light);
+    width: 100%;
+    max-width: 300px;
+}
+
+.game-info ol {
+    list-style: none;
+    padding: 0;
+}
+
+.game-info li {
+    margin-bottom: 10px;
+}
+
+.game-info button {
+    background-color: var(--color-accent-btn);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    width: 100%;
+    transition: background-color 0.2s, transform 0.1s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.game-info button:hover {
+    background-color: #27ae60;
+    transform: translateY(-1px);
+}
+
+/* --- 6. Stiluri și Animații pentru Mesajele Finale --- */
+
+/* Mesajul de câștig (Felicitări + Artificii) */
+.status-winner {
+    color: var(--color-symbol-x); /* Roșu/corai vibrant */
+    font-size: 2.2em;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: linear-gradient(45deg, #ffeaa7, #fab1a0); /* Gradient festiv */
+    transform: scale(1.05); /* Zoom in */
+    box-shadow: 0 0 10px rgba(255, 165, 0, 0.4);
+    /* Animația de artificii */
+    animation: pulse-glow 1.5s infinite; 
+}
+
+/* Mesajul de remiză (Simpatic) */
+.status-draw {
+    color: var(--color-text-dark);
+    font-size: 1.8em;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #f7f1e3; /* Culoare neutră, caldă */
+    border: 2px dashed var(--color-accent-btn);
+    /* Animație subtilă */
+    animation: shake-subtle 0.5s ease-in-out 3;
+}
+
+
+/* --- 7. Keyframes (Animații) --- */
+
+/* Animația de Pop-In pentru simboluri */
+@keyframes pop-in {
+    0% { transform: scale(0.5); opacity: 0; }
+    80% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1.0); }
+}
+
+/* Animație de pulsare/strălucire (pentru Câștigător) */
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 5px #f6e58d, 0 0 10px #ff7979; }
+    50% { box-shadow: 0 0 15px #f6e58d, 0 0 30px #ff7979; }
+    100% { box-shadow: 0 0 5px #f6e58d, 0 0 10px #ff7979; }
+}
+
+/* Animație de tremur subtil (pentru Remiză) */
+@keyframes shake-subtle {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
+    75% { transform: translateX(-2px); }
+    100% { transform: translateX(0); }
+}
+/* --- 1. Variabile și Resetare Globală --- */
+:root {
+    --color-bg-main: #e8ecf4;        
+    --color-bg-card: #ffffff;        
+    --color-text-dark: #34495e;      
+    --color-symbol-x: #e74c3c;       
+    --color-symbol-o: #3498db;       
+    --color-accent-btn: #2ecc71;     
+    --color-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    /* Culori și dimensiuni pentru artificii */
+    --firework-color-1: #ff6b6b; /* Roșu coral */
+    --firework-color-2: #ffe66d; /* Galben solar/Aur */
+    --firework-color-3: #5dade2; /* Albastru cer */
+    --firework-color-4: #28a745; /* Verde smarald */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--color-bg-main);
+    color: var(--color-text-dark);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    overflow: hidden; /* Foarte important pentru animațiile mari */
+}
+
+/* --- 2. Containerul Principal (Joc și Informații) --- */
+.game {
+    display: flex;
+    flex-direction: column; 
+    gap: 40px;
+    align-items: center;
+    padding: 40px;
+    background-color: var(--color-bg-card);
+    border-radius: 20px;
+    box-shadow: var(--color-shadow-light);
+    position: relative; 
+    z-index: 10; 
+    transition: all 0.5s ease-out;
+}
+
+/* Efect de aur pe container când cineva câștigă */
+.game.fireworks-active {
+    box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.6), 0 0 60px 20px rgba(255, 140, 0, 0.4);
+    transform: scale(1.02);
+}
+
+@media (min-width: 768px) {
+    .game {
+        flex-direction: row; 
+        padding: 50px;
+    }
+}
+
+/* --- 3. Tabla de Joc și Pătrățelele (Fără modificări majore aici) --- */
+.game-board {
+    border: 5px solid var(--color-text-dark);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.status {
+    font-size: 1.8em;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-align: center;
+    color: var(--color-text-dark);
+    transition: all 0.3s ease; 
+    min-height: 1.5em; 
+}
+
+.board-row { display: flex; }
+.square {
+    background: #fdfdfd;
+    border: 1px solid #ccc;
+    font-size: 4em;
+    font-weight: 800;
+    line-height: 1;
+    height: 100px;
+    width: 100px;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+/* ... Stiluri pentru borduri și hover (lăsate ca înainte) ... */
+
+.square[data-value="X"] {
+    color: var(--color-symbol-x);
+    animation: pop-in 0.2s ease-out;
+}
+
+.square[data-value="O"] {
+    color: var(--color-symbol-o);
+    animation: pop-in 0.2s ease-out;
+}
+
+
+
+/* Mesajul de câștig */
+.status-winner {
+    color: #ffd700; /* Auriu */
+    font-size: 2.8em; 
+    font-weight: 900;
+    padding: 15px 30px;
+    border-radius: 15px;
+    background: linear-gradient(90deg, #ffdc34, #ff8c00, #ffdc34); /* Gradient Auriu/Portocaliu */
+    transform: scale(1.1); 
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 140, 0, 0.6);
+    animation: gold-glow 2s infinite alternate, bounce-in 0.8s ease-out; 
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+}
+
+/* Mesajul de remiză (simpatic) */
+.status-draw {
+    color: var(--color-text-dark);
+    font-size: 1.8em;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #f7f1e3; 
+    border: 2px dashed var(--color-accent-btn);
+    animation: shake-subtle 0.5s ease-in-out 3;
+}
+
+
+/* --- 5. Artificii "PANARAMA MARE" --- */
+
+.fireworks-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    pointer-events: none; 
+    z-index: 1; /* Artificiile sub joc */
+    background: radial-gradient(circle at center, rgba(0,0,0,0.1), rgba(0,0,0,0.3)); /* Fundal mai întunecat subtil */
+}
+
+/* Folosim pseudo-elemente pentru a crea multiple "explozii" de artificii */
+.fireworks-container::before,
+.fireworks-container::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+}
+
+/* Prima explozie (poziționată sus-stânga) */
+.fireworks-container::before {
+    top: 20%;
+    left: 20%;
+    background: var(--firework-color-1);
+    animation: firework-explode 1.5s ease-out 0s infinite;
+    box-shadow: 0 0 50px var(--firework-color-1);
+}
+
+
+.fireworks-container::after {
+    top: 80%;
+    left: 80%;
+    background: var(--firework-color-2);
+    animation: firework-explode 1.5s ease-out 0.5s infinite;
+    box-shadow: 0 0 50px var(--firework-color-2);
+}
+
+/* A treia explozie (adăugată pentru panaramă mare) */
+.fireworks-container div::before { /* Folosim un div pentru a avea 3 elemente */
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 70%;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--firework-color-3);
+    animation: firework-explode 1.5s ease-out 0.25s infinite;
+    box-shadow: 0 0 50px var(--firework-color-3);
+}
+
+
+
+
+@keyframes pop-in {
+    0% { transform: scale(0.5); opacity: 0; }
+    80% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1.0); }
+}
+
+/* Animația de strălucire AURIE pentru mesajul de câștig */
+@keyframes gold-glow {
+    0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 140, 0, 0.6); }
+    100% { box-shadow: 0 0 30px rgba(255, 215, 0, 1), 0 0 60px rgba(255, 140, 0, 0.8); }
+}
+
+@keyframes bounce-in {
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1.1); }
+}
+
+@keyframes shake-subtle {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
+    75% { transform: translateX(-2px); }
+    100% { transform: translateX(0); }
+}
+
+
+@keyframes firework-explode {
+    0% {
+        transform: scale(0) translate(0, 0);
+        opacity: 1;
+    }
+    10% {
+        transform: scale(1) translate(0, 0);
+    }
+    100% {
+        transform: scale(20) translate(calc(var(--rand-x) * 10vw), calc(var(--rand-y) * 10vh));
+        opacity: 0;
+    }
+}
+
